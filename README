@@ -1,0 +1,27 @@
+SqlSessionStore
+===============
+
+See http://railsexpress.de/blog/articles/2005/12/19/roll-your-own-sql-session-store
+
+Only Mysql and Postgres are currently supported.
+
+Run
+    script/generate sql_session_store mysql
+or
+    script/generate sql_session_store postgresql
+
+Then run
+    rake migrate
+or
+    rake db:migrate
+for edge rails.
+
+Add this to environment.rb:
+    config.action_controller.session_store = :sql_session_store
+
+Finally, depending on your database type, add
+    SqlSessionStore.session_class = MysqlSession
+or
+    SqlSessionStore.session_class = PostgresqlSession
+after the initializer section in environment.rb
+
