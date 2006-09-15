@@ -45,8 +45,8 @@ environment.rb:
 IMPORTANT NOTES
 ===============
 
-1. The class name SQLSessionStore to SqlSessionStore to let Rails work
-   its autoload magic.
+1. The class name SQLSessionStore has changed to SqlSessionStore to
+   let Rails work its autoload magic.
 
 2. You will need the binary drivers for Mysql or Postgresql.
    These have been verified to work:
