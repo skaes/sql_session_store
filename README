@@ -1,11 +1,15 @@
 SqlSessionStore
 ===============
-
 See http://railsexpress.de/blog/articles/2005/12/19/roll-your-own-sql-session-store
 
-Only Mysql and Postgres are currently supported.
+Only Mysql and Postgres are currently supported (others work, but you
+won't see much performance improvement).
 
-Run
+Step 1
+======
+If you have generated your sessions table using rake db:sessions:create, go to Step 2
+
+If you're using an old version of sql_session_store, run
     script/generate sql_session_store mysql
 or
     script/generate sql_session_store postgresql
@@ -16,6 +20,8 @@ or
     rake db:migrate
 for edge rails.
 
+Step 2
+======
 Add this to environment.rb:
     config.action_controller.session_store = :sql_session_store
 
@@ -25,3 +31,24 @@ or
     SqlSessionStore.session_class = PostgresqlSession
 after the initializer section in environment.rb
 
+Step 3 (optional)
+================
+
+If you want to use a database separate from your default one to store
+your sessions, specify a configuation in your database.yml file (say
+sessions), and establish the connection on SqlSessionStore::Session in
+environment.rb:
+
+   SqlSessionStore::Session.establish_connection :sessions
+
+
+IMPORTANT NOTE
+==============
+
+You will need the binary drivers for Mysql or Postgresql.
+
+These have been verified to work:
+
+   * ruby-postgres (0.7.1.2005.12.21) with postgreql 8.1
+
+   * ruby-mysql 2.7.1 with Mysql 4.1

@@ -34,9 +34,9 @@ class PostgresqlSession
 
   class << self
 
-    # retrieve an ActiveRecord connection and get the 'raw' Postgresql connection from it
+    # retrieve the session table connection and get the 'raw' Postgresql connection from it
     def session_connection
-      ActiveRecord::Base.connection.connection
+      SqlSessionStore::Session.connection.connection
     end
 
     # try to find a session with a given +session_id+. returns nil if

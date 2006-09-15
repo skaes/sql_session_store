@@ -32,9 +32,9 @@ class MysqlSession
 
   class << self
 
-    # retrieve the ActiveRecordStore::Session connection and get the 'raw' Mysql connection from it
+    # retrieve the session table connection and get the 'raw' Mysql connection from it
     def session_connection
-      CGI::Session::ActiveRecordStore::Session.connection.connection
+      SqlSessionStore::Session.connection.connection
     end
 
     # try to find a session with a given +session_id+. returns nil if
