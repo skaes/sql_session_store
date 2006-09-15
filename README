@@ -42,13 +42,14 @@ environment.rb:
    SqlSessionStore::Session.establish_connection :sessions
 
 
-IMPORTANT NOTE
-==============
+IMPORTANT NOTES
+===============
 
-You will need the binary drivers for Mysql or Postgresql.
+1. The class name SQLSessionStore to SqlSessionStore to let Rails work
+   its autoload magic.
 
-These have been verified to work:
+2. You will need the binary drivers for Mysql or Postgresql.
+   These have been verified to work:
 
    * ruby-postgres (0.7.1.2005.12.21) with postgreql 8.1
-
    * ruby-mysql 2.7.1 with Mysql 4.1
