@@ -22,8 +22,13 @@ for edge rails.
 
 Step 2
 ======
-Add this to environment.rb:
+If you're on egde rails, add this to environment.rb:
     config.action_controller.session_store = :sql_session_store
+
+If you're on rails 1.1.x, add the code below after the initializer
+config section:
+    ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS.
+      update(:database_manager => SqlSessionStore)
 
 Finally, depending on your database type, add
     SqlSessionStore.session_class = MysqlSession
