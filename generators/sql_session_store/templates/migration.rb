@@ -9,7 +9,7 @@ class <%= migration_name %> < ActiveRecord::Migration
         rename_column :sessions, :sessid, :session_id
       else
         add_column :sessions, :session_id, :string unless columns.include?('session_id')
-        add_column :sessions, :data, :text unless columns.include?('text')
+        add_column :sessions, :data, :text unless columns.include?('data')
         if columns.include?('created_on')
           rename_column :sessions, :created_on, :created_at
         else
