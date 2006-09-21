@@ -34,7 +34,7 @@ class MysqlSession
 
     # retrieve the session table connection and get the 'raw' Mysql connection from it
     def session_connection
-      SqlSessionStore::Session.connection.connection
+      SqlSession.connection.connection
     end
 
     # try to find a session with a given +session_id+. returns nil if

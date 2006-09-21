@@ -41,10 +41,10 @@ Step 3 (optional)
 
 If you want to use a database separate from your default one to store
 your sessions, specify a configuation in your database.yml file (say
-sessions), and establish the connection on SqlSessionStore::Session in
+sessions), and establish the connection on SqlSession in
 environment.rb:
 
-   SqlSessionStore::Session.establish_connection :sessions
+   SqlSession.establish_connection :sessions
 
 
 IMPORTANT NOTES
