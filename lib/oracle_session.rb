@@ -34,7 +34,7 @@ class OracleSession
 
   class << self
 
-    # retrieve the session table connection and get the 'raw' Postgresql connection from it
+    # retrieve the session table connection and get the 'raw' Oracle connection from it
     def session_connection
       SqlSession.connection.connection
     end
