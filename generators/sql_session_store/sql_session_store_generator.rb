@@ -5,6 +5,8 @@ class SqlSessionStoreGenerator < Rails::Generator::NamedBase
       @_database = 'postgresql'
     elsif runtime_args.include?('mysql')
       @_database = 'mysql'
+    elsif runtime_args.include?('oracle')
+      @_database = 'oracle'
     else
       puts "error: database type not given.\nvalid arguments are: mysql or postgresql"
       exit
