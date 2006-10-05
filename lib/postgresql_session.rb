@@ -94,7 +94,7 @@ class PostgresqlSession
       # if @id is nil, we need to create a new session in the database
       # and set @id to the primary key of the inserted record
       connection.query("INSERT INTO sessions (\"created_at\",  \"updated_at\", \"session_id\", \"data\") VALUES (NOW(), NOW(), '#{@session_id}', #{PGconn::quote(data)})")
-      @id = connection.lastval
+      @id = connection.lastval rescue connection.query("select lastval()").first[0]
     end
   end
 
