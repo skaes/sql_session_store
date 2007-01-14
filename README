@@ -21,26 +21,26 @@ for edge rails.
 
 == Step 2
 
-If you're on egde rails, add this to environment.rb:
-    config.action_controller.session_store = :sql_session_store
+Add the code below after the initializer config section:
 
-If you're on rails 1.1.x, add the code below after the initializer
-config section:
     ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS.
       update(:database_manager => SqlSessionStore)
 
 Finally, depending on your database type, add
+
     SqlSessionStore.session_class = MysqlSession
 or
+
     SqlSessionStore.session_class = PostgresqlSession
 or
     SqlSessionStore.session_class = OracleSession
+
 after the initializer section in environment.rb
 
 == Step 3 (optional)
 
 If you want to use a database separate from your default one to store
-your sessions, specify a configuation in your database.yml file (say
+your sessions, specify a configuration in your database.yml file (say
 sessions), and establish the connection on SqlSession in
 environment.rb:
 
@@ -57,3 +57,4 @@ environment.rb:
 
    * ruby-postgres (0.7.1.2005.12.21) with postgreql 8.1
    * ruby-mysql 2.7.1 with Mysql 4.1
+   * ruby-mysql 2.7.2 with Mysql 5.0
