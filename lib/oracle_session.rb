@@ -44,16 +44,17 @@ class OracleSession
     # +created_at+ and +updated_at+ as they are not accessed anywhyere
     # outside this class.
     def find_session(session_id)
+      new_session = nil
       connection = session_connection
-      my_session = nil
-      result = connection.exec("SELECT id, data FROM sessions WHERE session_id='#{session_id}' and rownum=1")
+      result = connection.exec("SELECT id, data FROM sessions WHERE session_id = :a and rownum=1", session_id)
 
+      # Make sure to save the @id if we find an existing session
       while row = result.fetch
-        my_session = new(session_id,row[1].read)
-        my_session.id = row[0]
+        new_session = new(session_id,row[1].read)
+        new_session.id = row[0]
       end
       result.close
-      my_session
+      new_session
     end
 
     # create a new session with given +session_id+ and +data+
@@ -62,8 +63,12 @@ class OracleSession
       new_session = new(session_id, data)
       if @@eager_session_creation
         connection = session_connection
-        connection.exec("INSERT INTO sessions (id, created_at, updated_at, session_id, data) VALUES (SESSIONS_SEQ.nextval, SYSDATE, SYSDATE, '#{session_id}', #{data.gsub(/\\/, '\&\&').gsub(/'/, "''")})")
-	new_session.id = connection.query("SELECT sessions_seq.currval FROM dual")
+        connection.exec("INSERT INTO sessions (id, created_at, updated_at, session_id, data)"+
+                        " VALUES (sessions_seq.nextval, SYSDATE, SYSDATE, :a, :b)",
+                         session_id, data)
+        result = connection.exec("SELECT sessions_seq.currval FROM dual")
+        row = result.fetch
+        new_session.id = row[0].to_i
       end
       new_session
     end
@@ -88,12 +93,17 @@ class OracleSession
     if @id
       # if @id is not nil, this is a session already stored in the database
       # update the relevant field using @id as key
-      connection.exec("UPDATE sessions SET updated_at=SYSDATE, data='#{data.gsub(/\\/, '\&\&').gsub(/'/, "''")}' WHERE id=#{@id}")
+      connection.exec("UPDATE sessions SET updated_at = SYSDATE, data = :a WHERE id = :b",
+                       data, @id)
     else
       # if @id is nil, we need to create a new session in the database
       # and set @id to the primary key of the inserted record
-      connection.exec("INSERT INTO sessions (id, created_at,  updated_at, session_id, data) VALUES (SESSIONS_SEQ.nextval, SYSDATE, SYSDATE, '#{@session_id}', '#{data.gsub(/\\/, '\&\&').gsub(/'/, "''")}')")
-      id = connection.exec("SELECT SESSIONS_SEQ.currval from dual")
+      connection.exec("INSERT INTO sessions (id, created_at, updated_at, session_id, data)"+
+                      " VALUES (sessions_seq.nextval, SYSDATE, SYSDATE, :a, :b)",
+                       @session_id, data)
+      result = connection.exec("SELECT sessions_seq.currval FROM dual")
+      row = result.fetch
+      @id = row[0].to_i
     end
   end
 
@@ -110,7 +120,8 @@ __END__
 #
 # Copyright (c) 2006 Stefan Kaes
 # Copyright (c) 2006 Tiago Macedo
-
+# Copyright (c) 2007 Nate Wiger
+#
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
 # "Software"), to deal in the Software without restriction, including
