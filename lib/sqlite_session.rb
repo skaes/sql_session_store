@@ -43,6 +43,7 @@ class SqliteSession
     # outside this class
     def find_session(session_id)
       connection = session_connection
+      session_id = SQLite3::Database.quote(session_id)
       result = connection.execute("SELECT id, data FROM sessions WHERE `session_id`='#{session_id}' LIMIT 1")
       my_session = nil
       # each is used below, as other methods barf on my 64bit linux machine
@@ -58,6 +59,7 @@ class SqliteSession
     # create a new session with given +session_id+ and +data+
     # and save it immediately to the database
     def create_session(session_id, data)
+      session_id = SQLite3::Database.quote(session_id)
       new_session = new(session_id, data)
       if @@eager_session_creation
         connection = session_connection
