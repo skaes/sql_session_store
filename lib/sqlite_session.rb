@@ -110,8 +110,8 @@ __END__
 
 # This software is released under the MIT license
 #
-# Copyright (c) 2005, 2006 Stefan Kaes
-# Copyright (c) 2006 Ted X Toth
+# Copyright (c) 2005-2008 Stefan Kaes
+# Copyright (c) 2006-2008 Ted X Toth
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
