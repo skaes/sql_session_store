@@ -9,7 +9,7 @@ end
 # +SqlSessionStore+ is a stripped down, optimized for speed version of
 # class +ActiveRecordStore+.
 
-class SqlSessionStore
+class SqlSessionStore < (ActionController::Session::AbstractStore rescue Object)
 
   # The class to be used for creating, retrieving and updating sessions.
   # Defaults to SqlSessionStore::Session, which is derived from +ActiveRecord::Base+.
@@ -23,48 +23,81 @@ class SqlSessionStore
   cattr_accessor :session_class
   @@session_class = SqlSession
 
-  # Create a new SqlSessionStore instance.
-  #
-  # +session+ is the session for which this instance is being created.
-  #
-  # +option+ is currently ignored as no options are recognized.
+  # Rails 2.3 and later uses rack based sessions.
+  # most of the magic happens in the superclass.
+  # Rails before 2.3 didn't use rack based sessions.
 
-  def initialize(session, option=nil)
-    if @session = @@session_class.find_session(session.session_id)
-      @data = unmarshalize(@session.data)
-    else
-      @session = @@session_class.create_session(session.session_id, marshalize({}))
-      @data = {}
+  if Rails::VERSION::STRING >= "2.3"
+
+    SESSION_RECORD_KEY = 'rack.session.record'.freeze
+
+    def get_session(env, sid)
+      sid ||= generate_sid
+      if session = @@session_class.find_session(sid)
+        data = unmarshalize(session.data)
+      else
+        session = @@session_class.create_session(sid, marshalize({}))
+        data = {}
+      end
+      env[SESSION_RECORD_KEY] = session
+      [sid, data]
     end
-  end
 
-  # Update the database and disassociate the session object
-  def close
-    if @session
-      @session.update_session(marshalize(@data))
-      @session = nil
+    def set_session(env, sid, session_data)
+      if session = env[SESSION_RECORD_KEY]
+        session.update_session(marshalize(session_data))
+      else
+        get_session(env, sid)
+        env[SESSION_RECORD_KEY].update_session(marshalize(session_data))
+      end
+      true # required return code for rack
     end
-  end
 
-  # Delete the current session, disassociate and destroy session object
-  def delete
-    if @session
-      @session.destroy
-      @session = nil
+  else # pre rack based sessions (rails < 2.3)
+
+    # Create a new SqlSessionStore instance.
+    #
+    # +session+ is the session for which this instance is being created.
+    #
+    # +option+ is currently ignored as no options are recognized.
+
+    def initialize(session, option=nil)
+      if @session = @@session_class.find_session(session.session_id)
+        @data = unmarshalize(@session.data)
+      else
+        @session = @@session_class.create_session(session.session_id, marshalize({}))
+        @data = {}
+      end
     end
-  end
 
-  # Restore session data from the session object
-  def restore
-    if @session
-      @data = unmarshalize(@session.data)
+    # Update the database and disassociate the session object
+    def close
+      if @session
+        @session.update_session(marshalize(@data))
+        @session = nil
+      end
     end
-  end
 
-  # Save session data in the session object
-  def update
-    if @session
-      @session.update_session(marshalize(@data))
+    # Delete the current session, disassociate and destroy session object
+    def delete
+      if @session
+        @session.destroy
+        @session = nil
+      end
+    end
+
+    # Restore session data from the session object
+    def restore
+      if @session
+        @data = unmarshalize(@session.data)
+      end
+    end
+
+    # Save session data in the session object
+    def update
+      if @session
+        @session.update_session(marshalize(@data))
+      end
     end
   end
 
@@ -93,7 +126,7 @@ __END__
 
 # This software is released under the MIT license
 #
-# Copyright (c) 2005-2008 Stefan Kaes
+# Copyright (c) 2005-2009 Stefan Kaes
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the

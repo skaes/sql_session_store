@@ -17,16 +17,21 @@ Then run
     rake migrate
 or
     rake db:migrate
-for edge rails.
+for new versions of Rails.
 
 == Step 2
 
-Add the code below after the initializer config section:
+Initialisation depends on the Rails version being used:
+
+=== Older Rails versions
+
+If you are using a version before 2.3, add the code below after the
+initializer config section:
 
     ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS.
       update(:database_manager => SqlSessionStore)
 
-Finally, depending on your database type, add
+Then, depending on your database type, add
 
     SqlSessionStore.session_class = MysqlSession
 or
@@ -36,6 +41,45 @@ or
     SqlSessionStore.session_class = OracleSession
 
 after the initializer section in environment.rb
+
+=== Rails 2.3
+
+Rails 2.3 uses rack based sessions, which require that the session
+storage manager shows up in a certain position in the middleware
+stack. The Rails initializer has special code built in to ensure this
+for active record store. Therfore, the following steps will ensure that
+sql session store ends up in the correct place:
+
+* set up active recordstore as the session store in the config section
+* replace active record store with sql session store after the initializer section
+
+  Rails::Initializer.run do |config|
+    config.action_controller.session_store = :active_record_store
+    ...
+  end
+  ...
+  ActionController::Dispatcher.middleware.swap(:"ActiveRecord::SessionStore", SqlSessionStore)
+  ActionController::Base.session_store = SqlSessionStore
+  SqlSessionStore.session_class = MysqlSession
+
+It is really important that sql session store ends up in the same place in
+the middleware stack as active record store. More specifically: it
+must be placed below the connection management middleware.
+
+Your middleware stack should look similar to the following one:
+
+  use Rack::Lock
+  use ActionController::Failsafe
+  use ActionController::Reloader
+  use ActiveRecord::ConnectionAdapters::ConnectionManagement
+  use ActiveRecord::QueryCache
+  use SqlSessionStore
+  use ActionController::ParamsParser
+  use Rack::MethodOverride
+  use Rack::Head
+  run ActionController::Dispatcher.new
+
+You can run rake middlware to verify your setup.
 
 == Step 3 (optional)
 
@@ -57,4 +101,4 @@ environment.rb:
 
    * ruby-postgres (0.7.1.2005.12.21) with postgreql 8.1
    * ruby-mysql 2.7.1 with Mysql 4.1
-   * ruby-mysql 2.7.2 with Mysql 5.0
+   * ruby-mysql 2.7.2 up to 2.7.7 with Mysql 5.0
